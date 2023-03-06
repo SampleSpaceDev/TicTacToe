@@ -18,12 +18,10 @@
 
         function addEventListeners() {
             squares.forEach((square, index) => {
+                console.log(index);
                 square.addEventListener('click', () => {
-                    // Check if it is the player's turn
                     if (myTurn) {
-                        // Check if the square is already occupied
                         if (!square.textContent) {
-                            // Emit a 'move' event with the index of the selected square
                             socket.emit('move', index);
                         }
                     }
@@ -31,12 +29,13 @@
             });
         }
 
-        // Render the current state of the game board
         function renderBoard(state) {
-            // Clear the board
-            board.innerHTML = '';
+            squares.forEach((square, index) => {
+                square.remove();
+            });
 
-            // Render each square based on its state
+            console.log(state);
+
             state.forEach((value, index) => {
                 const square = document.createElement('div');
                 square.classList.add('square');
@@ -46,70 +45,47 @@
             });
         }
 
-        // Update the message area with the current game state
         function renderMessage(message) {
             const messageArea = document.querySelector('.message');
             messageArea.textContent = message;
         }
 
-        // Enable or disable the dark mode based on the toggle state
         function setDarkMode(isDarkMode) {
             const body = document.querySelector('body');
             body.classList.toggle('dark-mode', isDarkMode);
         }
 
-        const guid = () => {
-            const s4 = () => Math.floor((1 + Math.random()) * 0x10000).toString(16).substring(1);
-            return `${s4() + s4()}-${s4()}-${s4()}-${s4()}-${s4() + s4() + s4()}`;
-        }
-
-        // Listen for 'connect' event from the server
         socket.on('connect', () => {
             console.log('Connected to server');
             socket.emit("join");
+            // document.getElementById("message").innerHTML = gameID;
         });
 
-        // Listen for 'start' event from the server
-        socket.on('start', ({ state, isPlayer1 }) => {
-            // Render the initial game board state
+        socket.on('start', (state, turn) => {
             renderBoard(state);
-
-            // Enable or disable the dark mode based on the initial state
-            setDarkMode(isPlayer1);
-
-            // Set the turn based on the player's role
-            myTurn = isPlayer1;
-
-            // Add event listeners to each square on the board
+            // setDarkMode(isPlayer1);
+            myTurn = turn % 2 === 0;
             addEventListeners();
         });
 
-        // Listen for 'update' event from the server
-        socket.on('update', ({ state, message }) => {
-            // Render the updated game board state
+        socket.on('update', ({ state }) => {
             renderBoard(state);
-
-            // Update the message area with the current game state
-            renderMessage(message);
-
-            // Toggle the turn
+            // renderMessage(message);
             myTurn = !myTurn;
         });
 
-        // Listen for 'dark-mode' event from the server
         socket.on('dark-mode', isDarkMode => {
-            // Enable or disable the dark mode based on the toggle state
             setDarkMode(isDarkMode);
         });
     </script>
 </head>
 
 <body>
-    <div class="toggle">
+    <!-- <div class="toggle">
         <label>Dark mode</label>
         <input type="checkbox" id="dark-mode-toggle">
         <label for="dark-mode-toggle"></label>
-    </div>
+    </div> -->
 
     <div class="board">
         <div class="square" id="0"></div>
@@ -122,7 +98,7 @@
         <div class="square" id="7"></div>
         <div class="square" id="8"></div>
     </div>
-    <div class="message"></div>
+    <div id="message"></div>
 </body>
 
 </html>
