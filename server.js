@@ -28,7 +28,7 @@ io.on('connection', socket => {
             game.turn++;
             checkWin(game);
             // Broadcast the new state to the other player
-            socket.broadcast.to(gameID).emit('state', game.state, game.turn, game.winner);
+            socket.broadcast.to(gameID).emit('update', game.state);
         }
     });
 
